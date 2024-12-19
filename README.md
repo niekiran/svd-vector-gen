@@ -1,3 +1,4 @@
+
 SVD Vector and Linker Script Generator
 This tool scans the current directory for ARM Cortex-M compatible SVD files and automatically generates:
 
@@ -29,3 +30,4 @@ For STM32F303X.svd:
     PROVIDE(PVD = default_handler);
     PROVIDE(TAMPER = default_handler);
     ...
+
