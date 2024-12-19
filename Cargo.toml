@@ -1,0 +1,17 @@
+[package]
+name = "svd-vector-gen"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kiran Nayak <niekiran@gmail.com>"]
+description = "A tool to process Microcontroller SVD files(e.g. STM32) and generate vector tables and linker scripts."
+license = "MIT"
+repository = "https://github.com/your-repo/svd2vector"
+keywords = ["stm32", "svd", "vector table", "linker script"]
+categories = ["embedded", "utilities", "codegen"]
+
+[dependencies]
+svd-parser = "0.14.7"
+
+[[bin]]
+name = "svd-vector-gen"
+path = "src/main.rs"
