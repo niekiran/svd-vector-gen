@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Kiran Nayak <niekiran@gmail.com>"]
 description = "A tool to process Microcontroller SVD files(e.g. STM32) and generate vector tables and linker scripts."
 license = "MIT"
-repository = "https://github.com/your-repo/svd2vector"
+repository = "https://github.com/niekiran/svd-vector-gen.git"
 keywords = ["stm32", "svd", "vector table", "linker script"]
 categories = ["embedded", "utilities", "codegen"]
 
