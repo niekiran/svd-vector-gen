@@ -7,7 +7,7 @@ description = "A tool to process Microcontroller SVD files(e.g. STM32) and gener
 license = "MIT"
 repository = "https://github.com/niekiran/svd-vector-gen.git"
 keywords = ["stm32", "svd", "vector-table", "linker-script"]
-categories = ["embedded", "utilities", "codegen"]
+categories = ["embedded", "hardware-support", "development-tools"]
 
 [dependencies]
 svd-parser = "0.14.7"
