@@ -32,6 +32,22 @@ fn main() {
         std::process::exit(1);
     }
 
+    // Known Cortex-M exceptions (other than Reset, NMI, HardFault which are defined)
+    // This list includes common exceptions across Cortex-M variants.
+    // Adjust this list if needed based on the cores you support.
+    let known_exceptions = [
+        "MemManage_Handler",
+        "BusFault_Handler",
+        "UsageFault_Handler",
+        "SVCall_Handler",
+        "DebugMon_Handler",
+        "PendSV_Handler",
+        "SysTick_Handler",
+    ];
+
+    // Handlers we define at the top
+    let defined_handlers = ["Reset_Handler", "NMI_Handler", "HardFault_Handler"];
+
     // Process each SVD file
     for path in svd_files {
         // Read the SVD file
@@ -139,8 +155,75 @@ fn main() {
         let mut full_vector_table = system_exceptions;
         full_vector_table.extend(vector_table.into_iter());
 
+        // Extract handler names
+        let handler_names: Vec<String> = full_vector_table
+            .iter()
+            .filter_map(|entry| {
+                if entry.starts_with("Some(") && entry.ends_with(")") {
+                    let inside = &entry[5..entry.len()-1];
+                    if inside.ends_with("_Handler") {
+                        Some(inside.to_string())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        // Deduplicate handler names
+        let mut unique_handlers = handler_names.clone();
+        unique_handlers.sort();
+        unique_handlers.dedup();
+
+        // Separate handlers we define from those we declare
+        let (handlers_to_define, handlers_to_declare): (Vec<_>, Vec<_>) = unique_handlers
+            .into_iter()
+            .partition(|h| defined_handlers.contains(&h.as_str()));
+
+        // Among handlers_to_declare, separate exceptions and interrupts
+        // We consider a handler an exception if it's known or appears in the system_exceptions set
+        // We have a known_exceptions array and also defined_handlers for those already defined.
+        let mut exceptions_to_declare = Vec::new();
+        let mut irqs_to_declare = Vec::new();
+
+        for h in handlers_to_declare {
+            // If it's a known exception (from known_exceptions) and not defined above, it's an exception
+            if known_exceptions.contains(&h.as_str()) {
+                exceptions_to_declare.push(h);
+            } else {
+                // Otherwise it's likely an IRQ
+                irqs_to_declare.push(h);
+            }
+        }
+
+        // Build the top definitions for Reset, NMI, HardFault
+        let mut top_definitions = String::new();
+        for handler in handlers_to_define {
+            top_definitions.push_str(&format!(
+                "extern \"C\" fn {}() {{ loop {{}} }}\n",
+                handler
+            ));
+        }
+        top_definitions.push('\n');
+
+        // Build the extern "C" block for the exceptions (except the top 3) first, then interrupts
+        let mut extern_block = String::from("extern \"C\" {\n");
+        for handler in &exceptions_to_declare {
+            extern_block.push_str(&format!("    fn {}();\n", handler));
+        }
+        for handler in &irqs_to_declare {
+            extern_block.push_str(&format!("    fn {}();\n", handler));
+        }
+        extern_block.push_str("}\n\n");
+
         // Create the output for the VECTOR_TABLE array
-        let mut vector_table_string = "static VECTOR_TABLE: [Option<unsafe fn()>; ".to_string();
+        let mut vector_table_string = String::new();
+        vector_table_string.push_str(&top_definitions);
+        vector_table_string.push_str(&extern_block);
+
+        vector_table_string.push_str("static VECTOR_TABLE: [Option<unsafe extern \"C\" fn()>; ");
         vector_table_string.push_str(&full_vector_table.len().to_string());
         vector_table_string.push_str("] = [\n");
 

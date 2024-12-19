@@ -1,4 +1,34 @@
-static VECTOR_TABLE: [Option<unsafe fn()>; 44] = [
+extern "C" fn HardFault_Handler() { loop {} }
+extern "C" fn NMI_Handler() { loop {} }
+extern "C" fn Reset_Handler() { loop {} }
+
+extern "C" {
+    fn PendSV_Handler();
+    fn SVCall_Handler();
+    fn SysTick_Handler();
+    fn ADC_Handler();
+    fn DMA1_Channel1_Handler();
+    fn DMA1_Channel2_3_Handler();
+    fn DMAMUX_Handler();
+    fn EXTI0_1_Handler();
+    fn EXTI2_3_Handler();
+    fn EXTI4_5_Handler();
+    fn I2C_Handler();
+    fn RCC_Handler();
+    fn RTC_Handler();
+    fn SPI_Handler();
+    fn TIM14_Handler();
+    fn TIM16_Handler();
+    fn TIM17_Handler();
+    fn TIM1_BRK_UP_TRG_COM_Handler();
+    fn TIM1_CC_Handler();
+    fn TIM3_Handler();
+    fn USART1_Handler();
+    fn USART2_Handler();
+    fn WWDG_Handler();
+}
+
+static VECTOR_TABLE: [Option<unsafe extern "C" fn()>; 44] = [
     Some(Reset_Handler),
     Some(NMI_Handler),
     Some(HardFault_Handler),

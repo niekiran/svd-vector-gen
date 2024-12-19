@@ -1,4 +1,90 @@
-static VECTOR_TABLE: [Option<unsafe fn()>; 100] = [
+extern "C" fn HardFault_Handler() { loop {} }
+extern "C" fn NMI_Handler() { loop {} }
+extern "C" fn Reset_Handler() { loop {} }
+
+extern "C" {
+    fn BusFault_Handler();
+    fn MemManage_Handler();
+    fn PendSV_Handler();
+    fn SVCall_Handler();
+    fn SysTick_Handler();
+    fn UsageFault_Handler();
+    fn ADC1_2_Handler();
+    fn ADC3_Handler();
+    fn ADC4_Handler();
+    fn CAN_RX1_Handler();
+    fn CAN_SCE_Handler();
+    fn COMP123_Handler();
+    fn COMP456_Handler();
+    fn COMP7_Handler();
+    fn DMA1_CH1_Handler();
+    fn DMA1_CH2_Handler();
+    fn DMA1_CH3_Handler();
+    fn DMA1_CH4_Handler();
+    fn DMA1_CH5_Handler();
+    fn DMA1_CH6_Handler();
+    fn DMA1_CH7_Handler();
+    fn DMA2_CH1_Handler();
+    fn DMA2_CH2_Handler();
+    fn DMA2_CH3_Handler();
+    fn DMA2_CH4_Handler();
+    fn DMA2_CH5_Handler();
+    fn EXTI0_Handler();
+    fn EXTI15_10_Handler();
+    fn EXTI1_Handler();
+    fn EXTI2_TSC_Handler();
+    fn EXTI3_Handler();
+    fn EXTI4_Handler();
+    fn EXTI9_5_Handler();
+    fn FLASH_Handler();
+    fn FMC_Handler();
+    fn I2C1_ER_Handler();
+    fn I2C1_EV_EXTI23_Handler();
+    fn I2C2_ER_Handler();
+    fn I2C2_EV_EXTI24_Handler();
+    fn I2C3_ER_Handler();
+    fn I2C3_EV_Handler();
+    fn PVD_Handler();
+    fn RCC_Handler();
+    fn RTCAlarm_Handler();
+    fn RTC_WKUP_Handler();
+    fn SPI1_Handler();
+    fn SPI2_Handler();
+    fn SPI3_Handler();
+    fn SPI4_Handler();
+    fn TAMP_STAMP_Handler();
+    fn TIM1_BRK_TIM15_Handler();
+    fn TIM1_CC_Handler();
+    fn TIM1_TRG_COM_TIM17_Handler();
+    fn TIM1_UP_TIM16_Handler();
+    fn TIM20_BRK_Handler();
+    fn TIM20_CC_Handler();
+    fn TIM20_TRG_COM_Handler();
+    fn TIM20_UP_Handler();
+    fn TIM2_Handler();
+    fn TIM3_Handler();
+    fn TIM4_Handler();
+    fn TIM6_DACUNDER_Handler();
+    fn TIM7_Handler();
+    fn TIM8_BRK_Handler();
+    fn TIM8_CC_Handler();
+    fn TIM8_TRG_COM_Handler();
+    fn TIM8_UP_Handler();
+    fn UART4_EXTI34_Handler();
+    fn UART5_EXTI35_Handler();
+    fn USART1_EXTI25_Handler();
+    fn USART2_EXTI26_Handler();
+    fn USART3_EXTI28_Handler();
+    fn USB_HP_CAN_TX_Handler();
+    fn USB_HP_Handler();
+    fn USB_LP_CAN_RX0_Handler();
+    fn USB_LP_Handler();
+    fn USB_WKUP_EXTI_Handler();
+    fn USB_WKUP_Handler();
+    fn WWDG_Handler();
+}
+
+static VECTOR_TABLE: [Option<unsafe extern "C" fn()>; 100] = [
     Some(Reset_Handler),
     Some(NMI_Handler),
     Some(HardFault_Handler),
