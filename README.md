@@ -17,18 +17,17 @@ This tool scans the current directory for ARM Cortex-M compatible SVD files and 
 
 ## **Usage**
 
-1. **Place your SVD files** in the project directory.
-2. **Run the program** using:
+1. **Install the tool using Cargo**:
    ```bash
-   cargo run
+   cargo install svd-vector-gen
 
-3. **The tool generates**:
-   - `vector_<mcu>.txt`: Contains the vector table for each SVD file, including system exceptions and interrupt handlers.
-   - `device_<mcu>.x`: Linker script with `PROVIDE` entries for IRQs, such as:
-     ```text
-     PROVIDE(WWDG = default_handler);
-     PROVIDE(PVD = default_handler);
-     PROVIDE(TAMPER = default_handler);
+
+2. **Run the tool**:
+    - Ensure that the directory contains valid SVD files.
+    - For STM32 microcontrollers, you can obtain SVD files by installing [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html).
+    
+   ```bash
+   svd-vector-gen
 
 ## **Example**
 
