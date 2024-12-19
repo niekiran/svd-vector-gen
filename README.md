@@ -1,16 +1,19 @@
+# **SVD Vector and Linker Script Generator**
 
-SVD Vector and Linker Script Generator
 This tool scans the current directory for ARM Cortex-M compatible SVD files and automatically generates:
 
-1) Vector Table File (vector_<mcu>.txt):
+1. **Vector Table File (`vector_<mcu>.txt`)**:
+    - Contains the vector table for the specified microcontroller with system exceptions and interrupt handlers.
+    - **Format**: A `static VECTOR_TABLE` Rust array with `Option<unsafe fn()>` entries for each vector, including system handlers and IRQs.
 
-    Contains the vector table for the specified microcontroller with system exceptions and interrupt handlers.
+2. **Device-Specific Linker Script (`device_<mcu>.x`)**:
+    - Defines `PROVIDE` entries for all interrupts as:
+      ```text
+      PROVIDE(<IRQ_NAME> = default_handler);
+      ```
+      This facilitates linking during firmware development.
 
-    Format: A static VECTOR_TABLE Rust array with Option<unsafe fn()> entries for each vector, including system handlers and IRQs.
-
-2) Device-Specific Linker Script (device_<mcu>.x):
-
-    Defines PROVIDE entries for all interrupts as PROVIDE(<IRQ_NAME> = default_handler); to facilitate linking during firmware development.
+---
 
 Usage
 
