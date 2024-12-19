@@ -15,22 +15,33 @@ This tool scans the current directory for ARM Cortex-M compatible SVD files and 
 
 ---
 
-Usage
+## **Usage**
 
-1) Place your SVD files in the project directory.
-2) Run the program using:
-    cargo run
+1. **Place your SVD files** in the project directory.
+2. **Run the program** using:
+   ```bash
+   cargo run
 
-3) The tool generates:
-    vector_<mcu>.txt for each SVD file with the interrupt vector table.
-    device_<mcu>.x linker script with PROVIDE entries for IRQs.
+3. **The tool generates**:
+   - `vector_<mcu>.txt`: Contains the vector table for each SVD file, including system exceptions and interrupt handlers.
+   - `device_<mcu>.x`: Linker script with `PROVIDE` entries for IRQs, such as:
+     ```text
+     PROVIDE(WWDG = default_handler);
+     PROVIDE(PVD = default_handler);
+     PROVIDE(TAMPER = default_handler);
 
-Example
-For STM32F303X.svd:
-    vector_STM32F303X.txt contains the vector table.
-    device_STM32F303X.x contains the linker script:
-    PROVIDE(WWDG = default_handler);
-    PROVIDE(PVD = default_handler);
-    PROVIDE(TAMPER = default_handler);
-    ...
+## **Example**
+
+For `STM32F303X.svd`:
+
+1. **Generated Files**:
+   - `vector_STM32F303X.txt`: Contains the vector table.
+   - `device_STM32F303X.x`: Contains the linker script:
+     ```text
+     PROVIDE(WWDG = default_handler);
+     PROVIDE(PVD = default_handler);
+     PROVIDE(TAMPER = default_handler);
+     ...
+     ```
+
 
