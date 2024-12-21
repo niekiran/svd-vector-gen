@@ -1,6 +1,11 @@
+#[no_mangle]
 extern "C" fn HardFault_Handler() { loop {} }
+#[no_mangle]
 extern "C" fn NMI_Handler() { loop {} }
+#[no_mangle]
 extern "C" fn Reset_Handler() { loop {} }
+#[no_mangle]
+extern "C" fn Default_Handler() { loop {} }
 
 extern "C" {
     fn PendSV_Handler();
@@ -28,6 +33,8 @@ extern "C" {
     fn WWDG_Handler();
 }
 
+#[used]
+#[link_section = ".isr_vector"]
 static VECTOR_TABLE: [Option<unsafe extern "C" fn()>; 44] = [
     Some(Reset_Handler),
     Some(NMI_Handler),

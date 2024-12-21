@@ -45,8 +45,13 @@ fn main() {
         "SysTick_Handler",
     ];
 
-    // Handlers we define at the top
-    let defined_handlers = ["Reset_Handler", "NMI_Handler", "HardFault_Handler"];
+    // Handlers we define at the top, including Default_Handler
+    let defined_handlers = [
+        "Reset_Handler",
+        "NMI_Handler",
+        "HardFault_Handler",
+        "Default_Handler", // Added Default_Handler
+    ];
 
     // Process each SVD file
     for path in svd_files {
@@ -156,11 +161,11 @@ fn main() {
         full_vector_table.extend(vector_table.into_iter());
 
         // Extract handler names
-        let handler_names: Vec<String> = full_vector_table
+        let mut handler_names: Vec<String> = full_vector_table
             .iter()
             .filter_map(|entry| {
                 if entry.starts_with("Some(") && entry.ends_with(")") {
-                    let inside = &entry[5..entry.len()-1];
+                    let inside = &entry[5..entry.len() - 1];
                     if inside.ends_with("_Handler") {
                         Some(inside.to_string())
                     } else {
@@ -178,13 +183,20 @@ fn main() {
         unique_handlers.dedup();
 
         // Separate handlers we define from those we declare
-        let (handlers_to_define, handlers_to_declare): (Vec<_>, Vec<_>) = unique_handlers
-            .into_iter()
-            .partition(|h| defined_handlers.contains(&h.as_str()));
+        let (mut handlers_to_define, mut handlers_to_declare): (Vec<_>, Vec<_>) =
+            unique_handlers
+                .into_iter()
+                .partition(|h| defined_handlers.contains(&h.as_str()));
+
+        // **Ensure Default_Handler is defined even if not present in vector_table**
+        if defined_handlers.contains(&"Default_Handler")
+            && !handlers_to_define.contains(&"Default_Handler".to_string())
+        {
+            handlers_to_define.push("Default_Handler".to_string());
+        }
 
         // Among handlers_to_declare, separate exceptions and interrupts
         // We consider a handler an exception if it's known or appears in the system_exceptions set
-        // We have a known_exceptions array and also defined_handlers for those already defined.
         let mut exceptions_to_declare = Vec::new();
         let mut irqs_to_declare = Vec::new();
 
@@ -198,11 +210,11 @@ fn main() {
             }
         }
 
-        // Build the top definitions for Reset, NMI, HardFault
+        // Build the top definitions for Reset, NMI, HardFault, and Default_Handler with #[no_mangle]
         let mut top_definitions = String::new();
-        for handler in handlers_to_define {
+        for handler in &handlers_to_define {
             top_definitions.push_str(&format!(
-                "extern \"C\" fn {}() {{ loop {{}} }}\n",
+                "#[no_mangle]\nextern \"C\" fn {}() {{ loop {{}} }}\n",
                 handler
             ));
         }
@@ -218,20 +230,25 @@ fn main() {
         }
         extern_block.push_str("}\n\n");
 
-        // Create the output for the VECTOR_TABLE array
+        // Create the output for the VECTOR_TABLE array with #[used] and #[link_section = ".isr_vector"]
         let mut vector_table_string = String::new();
-        vector_table_string.push_str(&top_definitions);
-        vector_table_string.push_str(&extern_block);
-
+        vector_table_string.push_str("#[used]\n");
+        vector_table_string.push_str("#[link_section = \".isr_vector\"]\n");
         vector_table_string.push_str("static VECTOR_TABLE: [Option<unsafe extern \"C\" fn()>; ");
         vector_table_string.push_str(&full_vector_table.len().to_string());
         vector_table_string.push_str("] = [\n");
 
-        for entry in full_vector_table {
+        for entry in &full_vector_table {
             vector_table_string.push_str(&format!("    {},\n", entry));
         }
 
         vector_table_string.push_str("];\n");
+
+        // Combine top_definitions, extern_block, and vector_table_string
+        let mut final_vector_file_content = String::new();
+        final_vector_file_content.push_str(&top_definitions);
+        final_vector_file_content.push_str(&extern_block);
+        final_vector_file_content.push_str(&vector_table_string);
 
         // Generate the output file name based on the SVD file name
         let file_stem = path
@@ -245,15 +262,29 @@ fn main() {
         let mut vector_file =
             File::create(&vector_output_path).expect("Failed to create vector output file");
         vector_file
-            .write_all(vector_table_string.as_bytes())
+            .write_all(final_vector_file_content.as_bytes())
             .expect("Failed to write to vector output file");
 
         println!("Generated {}", vector_output_path);
 
         // Create the device-specific linker script with PROVIDE entries
+
         let mut device_entries = String::new();
-        for interrupt in &interrupts {
-            device_entries.push_str(&format!("PROVIDE({} = default_handler);\n", interrupt.name));
+
+        // **First, PROVIDE entries for known exceptions**
+        for exception in &known_exceptions {
+            device_entries.push_str(&format!(
+                "PROVIDE({} = Default_Handler);\n",
+                exception
+            ));
+        }
+
+        // **Then, PROVIDE entries for all other interrupt handlers**
+        for interrupt in &irqs_to_declare {
+            device_entries.push_str(&format!(
+                "PROVIDE({} = Default_Handler);\n",
+                interrupt
+            ));
         }
 
         let device_output_path = format!("device_{}.x", file_stem);
