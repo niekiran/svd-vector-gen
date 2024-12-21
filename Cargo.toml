@@ -1,6 +1,6 @@
 [package]
 name = "svd-vector-gen"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Kiran Nayak <niekiran@gmail.com>"]
 description = "A tool to process Microcontroller SVD files(e.g. STM32) and generate vector tables and linker scripts."
